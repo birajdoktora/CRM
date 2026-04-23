@@ -4,10 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>BirajDoktora — CRM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 :root{
   --blue:#3366ff;--blue-dark:#1a47f5;--blue-light:#e9f2ff;--blue-mid:#dbe8ff;
   --navy:#0b2559;--text-dark:#0f172a;--text-mid:#334155;--text-soft:#64748b;--text-muted:#94a3b8;
@@ -321,6 +323,10 @@ tbody td:last-child{padding-right:20px}
 </head>
 <body>
 
+<div id="appLoader" style="position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:14px">
+  <div style="width:38px;height:38px;border:3px solid #e2e8f0;border-top-color:#3366ff;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+  <div style="font-size:13px;color:#64748b;font-family:Inter,sans-serif;font-weight:500">Učitavanje podataka...</div>
+</div>
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="s-logo">
@@ -1026,10 +1032,45 @@ const KEYS = {
   issuer:'bdcrm_issuer', counter:'bdcrm_counter',
   contracts:'bdcrm_contracts', expenses:'bdcrm_expenses'
 };
+// ── Supabase config ──
+const SB_URL='https://hatarlmzvvasksvvpbdf.supabase.co';
+const SB_KEY='sb_publishable_fU4dEYTC4jk3XxUGKYcp9g_DkH7PGU1';
+let _sb=null;
+const _mem={};
+function load(key){
+  if(_mem[key]!==undefined)return _mem[key];
+  try{return JSON.parse(localStorage.getItem(key))||null}catch{return null}
+}
+function save(key,val){
+  _mem[key]=val;
+  localStorage.setItem(key,JSON.stringify(val));
+  if(_sb){_sb.from('settings').upsert({key,value:val}).then(({error})=>{
+    if(error)console.warn('Supabase save error:',error.message);
+  });}
+}
+async function initDB(){
+  try{
+    _sb=supabase.createClient(SB_URL,SB_KEY);
+    const {data,error}=await _sb.from('settings').select('*');
+    if(error)throw error;
+    if(data&&data.length>0){
+      data.forEach(r=>{_mem[r.key]=r.value;localStorage.setItem(r.key,JSON.stringify(r.value));});
+    }else{
+      for(const k of Object.values(KEYS)){
+        const v=JSON.parse(localStorage.getItem(k)||'null');
+        if(v!==null){_mem[k]=v;await _sb.from('settings').upsert({key:k,value:v});}
+      }
+    }
+  }catch(e){
+    console.warn('Supabase nedostupan, koristim localStorage:',e.message);
+    Object.values(KEYS).forEach(k=>{
+      const v=JSON.parse(localStorage.getItem(k)||'null');
+      if(v!==null)_mem[k]=v;
+    });
+  }
+}
 function getContracts(){return load(KEYS.contracts)||[]}
 function getExpenses(){return load(KEYS.expenses)||[]}
-function load(key){try{return JSON.parse(localStorage.getItem(key))||null}catch{return null}}
-function save(key,val){localStorage.setItem(key,JSON.stringify(val))}
 function getDoctors(){return load(KEYS.doctors)||[]}
 function getInvoices(){return load(KEYS.invoices)||[]}
 function getIssuer(){return load(KEYS.issuer)||{}}
@@ -2356,9 +2397,12 @@ document.addEventListener('keydown',e=>{
 // ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
-renderDashboard();
-// Provjeri troškove koji ističu pri pokretanju
-(function initExpiryCheck(){
+async function startApp(){
+  const loader=document.getElementById('appLoader');
+  if(loader)loader.style.display='flex';
+  await initDB();
+  if(loader)loader.style.display='none';
+  renderDashboard();
   autoUpdateExpiredStatuses();
   const exps=getExpenses();
   const soon=exps.filter(e=>{
@@ -2375,7 +2419,8 @@ renderDashboard();
     const txt=msgs.join(' · ')+(extra>0?` · +${extra} više`:'');
     toast('⚠️ Troškovi: '+txt,'error');
   }
-})();
+}
+startApp();
 </script>
 <div id="trendTooltip" style="display:none;position:fixed;background:#0f172a;color:#fff;border-radius:8px;padding:8px 12px;font-size:11.5px;pointer-events:none;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.4);min-width:150px;line-height:1.6"></div>
 </body>
