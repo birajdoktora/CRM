@@ -455,7 +455,7 @@ tbody td:last-child{padding-right:20px}
           </select>
         </div>
         <table><thead><tr>
-          <th>Ordinacija / Klinika</th><th>Doktori</th><th>Datum joina</th><th>Kontakt</th><th>Usluge</th><th>Iznos/mj.</th><th>Ugovor</th><th>Status</th><th>Akcije</th>
+          <th>Ordinacija / Klinika</th><th id="thDoktori">Doktori</th><th>Datum joina</th><th>Kontakt</th><th>Usluge</th><th>Iznos/mj.</th><th>Ugovor</th><th>Status</th><th>Akcije</th>
         </tr></thead>
         <tbody id="doctorTable"></tbody></table>
       </div>
@@ -1195,6 +1195,9 @@ function renderDoctors(){
     if(fsv&&!(d.services[fsv]&&d.services[fsv].active))return false;
     return true;
   });
+  const totalPd=getDoctors().reduce((s,d)=>s+(d.platformDoctors||[]).filter(x=>(x.ime||x.prezime||'').trim()).length,0);
+  const thD=document.getElementById('thDoktori');
+  if(thD)thD.textContent=totalPd>0?`Doktori (${totalPd})`:'Doktori';
   const tb=document.getElementById('doctorTable');
   tb.innerHTML=filtered.length?filtered.map(d=>{
     const pdList=(d.platformDoctors||[]).filter(x=>(x.ime||x.prezime||'').trim());
