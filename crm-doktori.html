@@ -346,7 +346,7 @@ tbody td:last-child{padding-right:20px}
     </button>
     <button class="s-item" onclick="switchTab('doktori')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Doktori
+      Ordinacije
     </button>
     <button class="s-item" onclick="switchTab('fakture')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -437,7 +437,7 @@ tbody td:last-child{padding-right:20px}
         <div class="table-toolbar">
           <div class="search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Pretraži doktore..." oninput="renderDoctors()" id="docSearch"/>
+            <input type="text" placeholder="Pretraži ordinacije..." oninput="renderDoctors()" id="docSearch"/>
           </div>
           <select class="filter-sel" onchange="renderDoctors()" id="docFilterStatus">
             <option value="">Svi statusi</option>
@@ -455,7 +455,7 @@ tbody td:last-child{padding-right:20px}
           </select>
         </div>
         <table><thead><tr>
-          <th>Doktor / Klinika</th><th>Datum joina</th><th>Kontakt</th><th>Usluge</th><th>Iznos/mj.</th><th>Ugovor</th><th>Status</th><th>Akcije</th>
+          <th>Ordinacija / Klinika</th><th>Doktori</th><th>Datum joina</th><th>Kontakt</th><th>Usluge</th><th>Iznos/mj.</th><th>Ugovor</th><th>Status</th><th>Akcije</th>
         </tr></thead>
         <tbody id="doctorTable"></tbody></table>
       </div>
@@ -648,7 +648,7 @@ tbody td:last-child{padding-right:20px}
 <div class="modal-backdrop hidden" id="doctorModal">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="doctorModalTitle">Dodaj doktora</div>
+      <div class="modal-title" id="doctorModalTitle">Dodaj ordinaciju</div>
       <button class="modal-close" onclick="closeDoctorModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -657,8 +657,8 @@ tbody td:last-child{padding-right:20px}
       <input type="hidden" id="doctorId"/>
       <div class="form-row cols2">
         <div class="form-group" style="grid-column:1/-1">
-          <label>Naziv doktora / klinike <span class="req">*</span></label>
-          <input class="f-input" id="d_name" placeholder="npr. Dr. Amra Hodžić ili Bosna Clinic"/>
+          <label>Naziv ordinacije / klinike <span class="req">*</span></label>
+          <input class="f-input" id="d_name" placeholder="npr. Poliklinika ABC ili Dr. Amra Hodžić"/>
         </div>
       </div>
       <div class="form-row cols2">
@@ -716,6 +716,13 @@ tbody td:last-child{padding-right:20px}
           <div class="svc-amount-wrap"><input class="svc-amount" id="svc_ostalo_amt" type="number" min="0" placeholder="0.00" disabled/><span class="svc-currency">KM</span></div>
         </div>
       </div>
+      <div class="f-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Doktori na platformi</span>
+        <button type="button" onclick="addPlatformDoctor()" style="display:flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Dodaj doktora
+        </button>
+      </div>
+      <div id="platformDoctorsList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
       <div class="f-section-title">Napomene</div>
       <textarea class="f-textarea" id="d_notes" placeholder="Interne napomene o ovom doktoru/klinici..."></textarea>
     </div>
@@ -1081,8 +1088,8 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 //  NAVIGATION
 // ══════════════════════════════════════════════════
 const TAB_META = {
-  dashboard:{title:'Dashboard',sub:'Pregled CRM sistema',btn:'Dodaj doktora',btnFn:'openDoctorModal()'},
-  doktori:{title:'Doktori',sub:'Upravljanje doktorima i klinikama',btn:'Dodaj doktora',btnFn:'openDoctorModal()'},
+  dashboard:{title:'Dashboard',sub:'Pregled CRM sistema',btn:'Dodaj ordinaciju',btnFn:'openDoctorModal()'},
+  doktori:{title:'Ordinacije',sub:'Upravljanje ordinacijama i klinikama',btn:'Dodaj ordinaciju',btnFn:'openDoctorModal()'},
   fakture:{title:'Fakture',sub:'Pregled i kreiranje faktura',btn:'Nova faktura',btnFn:'openInvoiceModal()'},
   ugovori:{title:'Ugovori',sub:'Upravljanje ugovorima sa klijentima',btn:'Dodaj ugovor',btnFn:'openContractModal()'},
   troskovi:{title:'Troškovi',sub:'Praćenje troškova i pretplata',btn:'Dodaj trošak',btnFn:'openExpenseModal()'},
@@ -1189,9 +1196,14 @@ function renderDoctors(){
     return true;
   });
   const tb=document.getElementById('doctorTable');
-  tb.innerHTML=filtered.length?filtered.map(d=>`<tr>
+  tb.innerHTML=filtered.length?filtered.map(d=>{
+    const pdList=(d.platformDoctors||[]).filter(x=>(x.ime||x.prezime||'').trim());
+    const pds=pdList.map(x=>'Dr. '+(x.ime||'')+' '+(x.prezime||'')).join(', ')||'—';
+    const pdCount=pdList.length;
+    return `<tr>
     <td><div style="font-weight:700;color:var(--text-dark)">${esc(d.name)}</div>${d.notes?`<div style="font-size:11px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.notes)}</div>`:''}
     </td>
+    <td><div style="font-size:12px;color:var(--text-mid);max-width:220px">${esc(pds)}${pdCount>0?` <span style="color:var(--blue);font-weight:700;font-size:11px">(${pdCount})</span>`:''}</div></td>
     <td>${d.joinDate||'—'}</td>
     <td><div style="font-size:12.5px;font-weight:600;color:var(--text-dark)">${esc(d.contactName||'—')}</div><div style="font-size:11px;color:var(--text-muted)">${esc(d.contactPhone||'')} ${d.contactEmail?'· '+esc(d.contactEmail):''}</div></td>
     <td>${svcBadges(d.services)}</td>
@@ -1204,7 +1216,7 @@ function renderDoctors(){
       <button class="act-btn act-view" onclick="openHistoryModal('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Historija</button>
       <button class="act-btn act-del" onclick="deleteDoctor('${d.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
     </td>
-  </tr>`).join(''):`<tr class="empty-row"><td colspan="7">Nema doktora koji odgovaraju filteru.</td></tr>`;
+  </tr>`;}).join(''):`<tr class="empty-row"><td colspan="8">Nema ordinacija koje odgovaraju filteru.</td></tr>`;
 }
 
 // ══════════════════════════════════════════════════
@@ -1217,7 +1229,7 @@ function openDoctorModal(id){
   if(id){
     const d=getDoctors().find(x=>x.id===id);
     if(!d)return;
-    document.getElementById('doctorModalTitle').textContent='Uredi doktora';
+    document.getElementById('doctorModalTitle').textContent='Uredi ordinaciju';
     document.getElementById('doctorId').value=d.id;
     document.getElementById('d_name').value=d.name||'';
     document.getElementById('d_join').value=d.joinDate||'';
@@ -1229,6 +1241,7 @@ function openDoctorModal(id){
     document.getElementById('d_jib').value=d.clientJib||'';
     document.getElementById('d_pdv').value=d.clientPdv||'';
     document.getElementById('d_notes').value=d.notes||'';
+    _pdArr=[...( d.platformDoctors||[])];renderPlatformDoctorsUI(_pdArr);
     SVCS.forEach(s=>{
       const sv=d.services&&d.services[s]||{};
       document.getElementById('svc_'+s).checked=!!sv.active;
@@ -1237,9 +1250,10 @@ function openDoctorModal(id){
       if(s==='ostalo'){document.getElementById('svc_ostalo_desc').value=sv.desc||'';document.getElementById('svc_ostalo_desc').disabled=!sv.active;}
     });
   } else {
-    document.getElementById('doctorModalTitle').textContent='Dodaj doktora';
+    document.getElementById('doctorModalTitle').textContent='Dodaj ordinaciju';
     document.getElementById('doctorId').value='';
     ['d_name','d_join','d_cname','d_cphone','d_cemail','d_addr','d_jib','d_pdv','d_notes'].forEach(id=>document.getElementById(id).value='');
+    _pdArr=[];renderPlatformDoctorsUI(_pdArr);
     document.getElementById('d_status').value='Aktivan';
     document.getElementById('d_join').value=new Date().toISOString().slice(0,10);
     SVCS.forEach(s=>{
@@ -1249,6 +1263,32 @@ function openDoctorModal(id){
       if(s==='ostalo'){document.getElementById('svc_ostalo_desc').value='';document.getElementById('svc_ostalo_desc').disabled=true;}
     });
   }
+}
+function renderPlatformDoctorsUI(arr){
+  const list=document.getElementById('platformDoctorsList');
+  if(!list)return;
+  list.innerHTML=arr.length?arr.map((d,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:center">
+      <input class="f-input" style="margin:0;font-size:12px" placeholder="Ime" value="${esc(d.ime||'')}" oninput="updatePlatformDoctor(${i},'ime',this.value)"/>
+      <input class="f-input" style="margin:0;font-size:12px" placeholder="Prezime" value="${esc(d.prezime||'')}" oninput="updatePlatformDoctor(${i},'prezime',this.value)"/>
+      <input class="f-input" style="margin:0;font-size:12px" placeholder="Specijalnost" value="${esc(d.specijalnost||'')}" oninput="updatePlatformDoctor(${i},'specijalnost',this.value)"/>
+      <button type="button" onclick="removePlatformDoctor(${i})" style="background:#fef2f2;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;color:#dc2626;font-weight:700;font-size:14px;line-height:1">×</button>
+    </div>`).join(''):'<div style="font-size:12px;color:var(--text-muted);padding:6px 0">Nema doktora — kliknite "Dodaj doktora"</div>';
+}
+let _pdArr=[];
+function addPlatformDoctor(){
+  _pdArr.push({ime:'',prezime:'',specijalnost:''});
+  renderPlatformDoctorsUI(_pdArr);
+}
+function removePlatformDoctor(i){
+  _pdArr.splice(i,1);
+  renderPlatformDoctorsUI(_pdArr);
+}
+function updatePlatformDoctor(i,field,val){
+  if(_pdArr[i])_pdArr[i][field]=val;
+}
+function collectPlatformDoctors(){
+  return _pdArr.filter(d=>(d.ime||d.prezime).trim());
 }
 function closeDoctorModal(){document.getElementById('doctorModal').classList.add('hidden')}
 function toggleSvcAmount(s){
@@ -1280,6 +1320,7 @@ function saveDoctor(){
     clientJib:document.getElementById('d_jib').value,
     clientPdv:document.getElementById('d_pdv').value,
     notes:document.getElementById('d_notes').value,
+    platformDoctors:collectPlatformDoctors(),
     services, createdAt:eid?(docs.find(x=>x.id===eid)||{}).createdAt:Date.now()
   };
   if(eid){const i=docs.findIndex(x=>x.id===eid);if(i>=0)docs[i]=doc;else docs.push(doc);}
